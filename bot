@@ -1,0 +1,266 @@
+pip install python-time
+
+pip install requests
+
+pip install jsonlib
+
+pip install beautifulsoup4
+
+pip install pyTelegramBotAPI
+
+pip install python-telegram-bot
+
+pip install DateTime
+
+pip install timedelta
+
+pip install DateTime
+
+pip install pip-date
+
+pip install python-time
+
+//CORPO DO BOT//
+import time
+import requests
+import json
+import telebot
+from datetime import datetime
+
+# INFORMAÇÕES DO SEU BOT
+token = '5292949472:AAFGyUQ2X4jWIyYN8Hh0W8T5x27JYPtW5yY' #seutoken
+chat_id = '-1001831150105' #seu chat id
+
+# OBJETO DO BOT
+bot = telebot.TeleBot(token)
+
+# LISTA ESTRATEGIA
+l_ght = []
+l_gft = []
+l_cht = []
+l_cft = []
+
+while True:
+    current_dateTime = datetime.now()
+    print(f"Dados Atualizados. {current_dateTime}")
+
+    time.sleep(5)
+    try:
+        url = "https://api.sportsanalytics.com.br/api/v1/fixtures-svc/fixtures/livescores"
+        querystring = {"include": "weatherReport,additionalInfo,league,stats,pressureStats,probabilities"}
+        payload = ""
+        headers = {
+            "cookie": "route=f69973370a0dd0883a57c7b955dfc742; SRVGROUP=common",
+            "authority": "api.sportsanalytics.com.br",
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "origin": "https://playscores.com",
+            "referer": "https://playscores.com/",
+            "sec-ch-ua": "^\^Google",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "^\^Windows^^",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+        }
+        response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
+        dic_response = response.json()
+        data = dic_response['data']
+
+        for game in data:
+            date = game['date']
+            # Team
+            awayTeam = game['awayTeam']['name']
+            homeTeam = game['homeTeam']['name']
+            league = game['league']['name']
+
+            # currentTime
+            minute = game['currentTime']['minute']
+
+            #redcards (Cartões vermelho)
+            redcards_home = game['stats']['redcards']['home']
+            redcards_away = game['stats']['redcards']['away']
+
+            # scores
+            homeTeamScore = game['scores']['homeTeamScore']
+            awayTeamScore = game['scores']['awayTeamScore']
+
+            # Corners
+            corners_home = game['stats']['corners']['home']
+            corners_away = game['stats']['corners']['away']
+            c_t = (corners_home + corners_away) + 0.5
+            c_t2 = (corners_home + corners_away) + 1
+            c_t3 = (corners_home + corners_away) + 1.5
+
+            # dangerousAttacks
+            dangerousAttacks_home = game['stats']['dangerousAttacks']['home']
+            dangerousAttacks_away = game['stats']['dangerousAttacks']['away']
+
+            # shotsOffgoal
+            shotsOffgoal_home = game['stats']['shotsOffgoal']['home']
+            shotsOffgoal_away = game['stats']['shotsOffgoal']['away']
+
+            # shotsOngoal
+            shotsOngoal_home = game['stats']['shotsOngoal']['home']
+            shotsOngoal_away = game['stats']['shotsOngoal']['away']
+
+            # total
+            chutes = (shotsOngoal_away + shotsOngoal_home) + (shotsOffgoal_away + shotsOffgoal_home)
+
+            # appm1
+            appm1_home = game['pressureStats']['appm1']['home']
+            appm1_away = game['pressureStats']['appm1']['away']
+
+            # appm2
+            appm2_home = game['pressureStats']['appm2']['home']
+            appm2_away = game['pressureStats']['appm2']['away']
+
+            # exg
+            exg_home = game['pressureStats']['exg']['home']
+            exg_away = game['pressureStats']['exg']['away']
+
+            # mh1
+            mh1_home = game['pressureStats']['mh1']['home']
+            mh1_away = game['pressureStats']['mh1']['away']
+
+            # mh2
+            mh2_home = game['pressureStats']['mh2']['home']
+            mh2_away = game['pressureStats']['mh2']['away']
+
+            # mh3
+            mh3_home = game['pressureStats']['appm1']['home']
+            mh3_away = game['pressureStats']['appm1']['away']
+
+            # Id
+            round_id = game['roundId']
+
+
+            name = homeTeam.replace(' ', '%20')
+            linkr = f"https://bet365.com/#/AX/K%5E{name}/"
+
+            #print('Json Tudo Ok')
+
+
+            if (homeTeamScore - awayTeamScore == 0):
+              if appm1_home or appm1_away >= 1.40:
+                if appm2_home or appm2_away >= 1.10:
+                  if shotsOngoal_home or shotsOngoal_away >= 2:
+                    if (minute >= 35) and (minute <= 37):
+                         if round_id in l_cht:
+                            print("Partida checada")
+
+                         else:
+                            l_cht.append(round_id)
+                            text = f'''
+                           
+
+🆚 <b>Jogo:</b> {homeTeam} {homeTeamScore} x {awayTeamScore} {awayTeam}
+
+🌍 <b>Competição:</b> {league}
+⏰ <b>Tempo:</b> {minute}'
+
+<b>Estratégia:⬇️</b>                           
+⛳️ Cantos LIMITE 1°Tempo
+
+    +{c_t} | +{c_t2} Escanteio Asiáticos 
+
+💎 <b>Odd Minima:</b> 1.70
+
+📲   <b><a href='{linkr}'>Acesse o jogo clicando aqui</a> </b>
+
+<b>Estatísticas (Casa - Fora)</b>
+🌡  Exg : {exg_home} - {exg_away}
+🔥 Ataques Perigosos: {dangerousAttacks_home} - {dangerousAttacks_away}
+🧨 APPM: {appm1_home} - {appm1_away}
+🎯 Chutes ao gol: {shotsOngoal_home} - {shotsOngoal_away}
+💥 Chutes fora do gol: {shotsOffgoal_home} - {shotsOffgoal_away}
+⛳️ Escanteios: {corners_home} - {corners_away}️
+🧨 AP nos ultimos 10 min: {appm2_home} - {appm2_away}️
+️
+   ⚠️ Se sair gol a entrada é abortada! Não entre se por acaso tenha saído escanteio em cima da entrada! ⚠️'''
+                            bot.send_message(chat_id=chat_id, text=text, disable_web_page_preview=True,
+                                             parse_mode='HTML')
+                            print(minute, '|', homeTeam, 'x', awayTeam, '|', 'Canto Limite HT')
+
+
+            if (homeTeamScore - awayTeamScore == 0): #or (homeTeamScore - awayTeamScore == 1):
+                if appm2_home + appm2_away >= 1.40:
+                    if (minute >= 82) and (minute <= 87):
+                         if round_id in l_cft:
+                            print("Partida checada")
+
+                         else:
+                            l_cft.append(round_id)
+                            text = f'''
+
+🆚 <b>Jogo:</b> {homeTeam} {homeTeamScore} x {awayTeamScore} {awayTeam}
+
+🌍 <b>Competição:</b> {league}
+⏰ <b>Tempo:</b> {minute}'
+
+<b>Estratégia:⬇️</b>                           
+⛳️ Cantos LIMITE 2°Tempo
+
+    +{c_t}  | +{c_t2} Escanteio Asiáticos 
+
+💎 <b>Odd Minima:</b> 1.70
+
+📲   <b> <a href='{linkr}'>Acesse o jogo clicando aqui</a> </b>
+
+<b>Estatísticas (Casa - Fora)</b>
+🌡  Exg : {exg_home} - {exg_away}
+🔥 Ataques Perigosos: {dangerousAttacks_home} - {dangerousAttacks_away}
+🧨 APPM: {appm1_home} - {appm1_away}
+🎯 Chutes ao gol: {shotsOngoal_home} - {shotsOngoal_away}
+💥 Chutes fora do gol: {shotsOffgoal_home} - {shotsOffgoal_away}
+⛳️ Escanteios: {corners_home} - {corners_away}
+🧨 AP nos ultimos 10 min: {appm2_home} - {appm2_away}
+
+ ️  ⚠️ Se sair gol a entrada é abortada! Não entre se por acaso tenha saído escanteio em cima da entrada! ⚠️'''
+                            bot.send_message(chat_id=chat_id, text=text, disable_web_page_preview=True,
+                                             parse_mode='HTML')
+                            print(minute, '|', homeTeam, 'x', awayTeam, '|', 'Canto Limite FT')
+
+
+            if (homeTeamScore - awayTeamScore == 0) or (homeTeamScore - awayTeamScore == 1):
+                if redcards_home + redcards_away >= 1:
+                    if (minute >= 20) and (minute <= 80):
+                         if round_id in l_cft:
+                            print("Partida checada")
+
+                         else:
+                            l_cft.append(round_id)
+                            text = f'''
+
+🆚 <b>Jogo:</b> {homeTeam} {homeTeamScore} x {awayTeamScore} {awayTeam}
+
+🌍 <b>Competição:</b> {league}
+⏰ <b>Tempo:</b> {minute}'
+
+<b>Estratégia:⬇️</b>                           
+
+ 🟥 Cartão vermelho na partida 
+
+ Cartão vermelho casa: {redcards_home} 🟥
+ Cartão Vermelho away: {redcards_away} 🟥
+
+📲   <b> <a href='{linkr}'>Acesse o jogo clicando aqui</a> </b>
+
+<b>Estatísticas (Casa - Fora)</b>
+🌡  Exg : {exg_home} - {exg_away}
+🔥 Ataques Perigosos: {dangerousAttacks_home} - {dangerousAttacks_away}
+🧨 AP por minuto: {appm1_home} - {appm1_away}
+🎯 Chutes ao gol: {shotsOngoal_home} - {shotsOngoal_away}
+💥 Chutes fora do gol: {shotsOffgoal_home} - {shotsOffgoal_away}
+⛳️ Escanteios: {corners_home} - {corners_away}
+🧨 AP nos ultimos 10 min: {appm2_home} - {appm2_away}
+
+ ️  ⚠️ Analise o jogo e veja qual a melhor entrada para o jogo! ⚠️'''
+                            bot.send_message(chat_id=chat_id, text=text, disable_web_page_preview=True,
+                                             parse_mode='HTML')
+                            print(minute, '|', homeTeam, 'x', awayTeam, '|', 'Cartão vermelho')
+
+    except:
+        pass
+        time.sleep(10)
